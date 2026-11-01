@@ -1,0 +1,32 @@
+{
+  "dataset": "Set11",
+  "test_size": 256,
+  "rates": [
+    0.1,
+    0.25,
+    0.5
+  ],
+  "algorithms": [
+    "OMP",
+    "ISTA"
+  ],
+  "omp_sparsity": null,
+  "ista_lam": 0.01,
+  "ista_iters": 1000,
+  "ista_fista": true,
+  "device": "cuda",
+  "images": [
+    "barbara",
+    "boats",
+    "cameraman",
+    "fingerprint",
+    "flinstones",
+    "foreman",
+    "house",
+    "lena256",
+    "Monarch",
+    "Parrots",
+    "peppers256"
+  ],
+  "timestamp": "2026-10-12 14:42:14"
+}

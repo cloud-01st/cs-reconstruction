@@ -1,0 +1,25 @@
+# 虚拟环境
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.pip-cache/
+
+# 数据集（体积大，用 scripts/download_data.py 重新获取）
+data/
+
+# 训练产物（权重体积大，重新训练或用 --resume 加载）
+checkpoints/
+*.pth
+*.pt
+
+# 环境探测的临时输出
+.gpu_raw.txt
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

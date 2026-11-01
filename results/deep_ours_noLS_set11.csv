@@ -1,0 +1,12 @@
+﻿algorithm,rate,image,psnr,ssim,time_s
+ours_noLS,0.25,barbara,27.49,0.856,0.4
+ours_noLS,0.25,boats,31.05,0.8883,0.06
+ours_noLS,0.25,cameraman,27.09,0.8429,0.05
+ours_noLS,0.25,fingerprint,23.7,0.8542,0.05
+ours_noLS,0.25,flinstones,24.24,0.8504,0.05
+ours_noLS,0.25,foreman,35.87,0.9294,0.05
+ours_noLS,0.25,house,34.03,0.8815,0.04
+ours_noLS,0.25,lena256,30.3,0.8848,0.05
+ours_noLS,0.25,Monarch,28.93,0.9095,0.04
+ours_noLS,0.25,Parrots,29.58,0.8994,0.05
+ours_noLS,0.25,peppers256,30.13,0.8745,0.05
