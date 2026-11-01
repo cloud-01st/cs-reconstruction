@@ -83,7 +83,7 @@ code .            # code 已在 PATH 中；或右键文件夹 →「通过 Code 
 |---|---|---|
 | 启动演示系统 | `Ctrl+Shift+B` | 集成终端里跑 streamlit，改 `app.py` / `src/*.py` 自动重载 |
 | 调试演示系统 | `F5` → 选「调试演示系统（Streamlit）」| 可下断点单步调试 |
-| 跑冒烟测试 | `Ctrl+Shift+P` → Tasks: Run Test Task | 论文 5.4 的自动化测试证据（6 场景 12 项）|
+| 跑冒烟测试 | `Ctrl+Shift+P` → Tasks: Run Test Task | 自动化测试证据（6 场景 12 项）|
 | 生成论文折线图 | `Ctrl+Shift+P` → Tasks: Run Task → 生成论文折线图 | 输出 `results/figures/*.png` |
 | 生成对比总表/对比图 | 同上 | 输出 `results/comparison_set11.md` 与对比图 |
 
@@ -106,27 +106,19 @@ python scripts/download_data.py --check      # 只检查
 > （多次 `invalid index-pack output` 中断）；**jsDelivr CDN 是唯一稳定可达的源**，
 > 多线程并行后约 4 分钟下完 300 张。BSDS500 图片下载由 `scripts/fetch_bsds500_cdn.py` 独立完成。
 
-## 4. 实验口径（重要，写论文时必须一致）
+## 4. 实验口径
 
-以下约定是全项目基准，任何对比实验都必须使用同一套口径；与文献数字对比时先核对对方口径。
+所有对比实验共用一套基准，复现时请勿改动：
 
-| 项 | 约定 |
-|---|---|
-| 图像处理 | 灰度图，范围 [0,1] |
-| 块尺寸 | **33×33（不重叠）**，与 ReconNet / ISTA-Net 等一致 |
-| 块向量 | N = 1089 维，`x ∈ R^1089` |
-| 采样率 rate | **M / 1089**，M = round(rate × 1089)；三档：0.10 / 0.25 / 0.50 |
-| 测量矩阵 Φ | 高斯随机矩阵，**按行归一化**（每行 L2 范数 = 1），固定种子可复现 |
-| 采样方式 | 逐块独立：y = Φx，y ∈ R^M |
-| 稀疏基 Ψ | 33×33 二维 DCT（正交），`Psi = kron(D, D)` |
-| 训练集 | BSDS500 train+val（300 张）全部不重叠块，共约 3.7 万块 |
-| 测试口径 | Set11 图 **resize 256×256 → edge padding 至 264×264 → 采样重建 → 裁回 256×256 计算指标** |
-| PSNR | `10·log10(MAX²/MSE)`，MAX = 1.0（[0,1] 域口径）|
-| SSIM | 11×11 高斯窗 σ=1.5（Wang et al. 2004 口径）|
-| 随机种子 | 采样矩阵 seed=0；训练固定 torch 种子（各实验脚本注明）|
+- **块**：33×33 不重叠，向量维度 N = 1089；采样率为 M / 1089（M 为测量数），取 0.10 / 0.25 / 0.50
+- **测量矩阵 Φ**：高斯随机、按行 L2 归一化、seed = 0（可复现）
+- **稀疏基 Ψ**：33×33 二维 DCT，`Psi = kron(D, D)`
+- **测试流程**：Set11 图 resize 256×256 → padding 至 264×264（块对齐）→ 采样重建 → 裁回 256×256 算指标
+- **指标**：PSNR 取 MAX = 1.0（[0,1] 域）；SSIM 用 11×11 高斯窗、σ = 1.5（Wang et al. 2004 口径）
+- **训练集**：BSDS500 train + val 共 300 张，约 3.7 万块
 
-> 与文献对比注意：部分论文测试结算在 231×231 裁剪区域或不做 padding，PSNR 会有 ±0.1~0.3 dB 级差异。
-> 论文中报告数字时**必须写明本次口径**（表格下方加注），不得直接混用不同口径的数字。
+> 之所以把口径单列：文献里的 PSNR 常在 231×231 裁剪区结算、或不做 padding，同一方法能差
+> 0.1–0.3 dB。所以本仓库的数字只跟自己比，不与文献表格直接混用。
 
 ## 5. 快速开始
 
@@ -141,8 +133,8 @@ python scripts/smoke_test.py --real
 python scripts/run_baseline.py            # 全量（11 张图）
 python scripts/run_baseline.py --quick    # 快速验证（3 张图、仅 0.25）
 # 产出（results/ 目录）：
-#   baseline_set11.csv     逐图逐档原始数据（含耗时，论文表格数据源）
-#   baseline_set11.md      论文用对比表（PSNR / SSIM）
+#   baseline_set11.csv     逐图逐档原始数据（含耗时）
+#   baseline_set11.md      对比表（PSNR / SSIM）
 #   baseline_visual.png    重建效果对比图（带 PSNR 标注）
 #   baseline_config.json   实验配置快照（含超参，保证可复现）
 
@@ -205,7 +197,7 @@ ReconNet=False（外部固定 Φ 采样）、OursNet=True（采样为网络的�
 **训练公平性约定**：固定 Φ 模型使用测量矩阵 seed=0（与评估/传统方法一致）；
 不使用测试集做模型选择；固定 epoch 训练后报告最终模型。
 
-### 演示系统（4.3，答辩演示用）
+### 演示系统
 
 ```bash
 # 启动（浏览器自动打开 http://127.0.0.1:8501）
@@ -218,7 +210,7 @@ ReconNet=False（外部固定 Φ 采样）、OursNet=True（采样为网络的�
 
 功能：图像上传 / 内置 Set11 示例图 → 采样率选择（10% / 25% / 50% / 三档全对比）
 → 三级级联网络重建 → PSNR / SSIM / 耗时展示；含 OMP/ISTA 传统方法对照、
-可学习测量核可视化（答辩加分项）。
+可学习测量核可视化。
 
 **模型对比折线图**（Plotly 交互图，见 `src/plotting.py`，数据取自 `results/` 下已跑完的
 评估结果，不额外推理）：
@@ -231,21 +223,21 @@ ReconNet=False（外部固定 Φ 采样）、OursNet=True（采样为网络的�
 | ④ 训练收敛 | loss–epoch 折线（对数轴，自动隐藏发散异常点）| `results/train_*_log.csv` |
 | ⑤ 本图实测 | 当前演示图像在三档采样率下的实测折线（与页面结果同源）| 页面实时推理 |
 
-自动化测试（论文 5.4 系统测试证据）：
+自动化测试：
 `python scripts/app_smoke_test.py`（6 场景 12 项检查，全部通过）。
 
-**论文插图（第 5 章折线图）**：
+**折线图生成**：
 ```bash
 .venv/Scripts/python.exe scripts/make_line_figures.py
 ```
 产出 `results/figures/`：
 
-| 文件 | 用途 | 已插入论文位置 |
-|---|---|---|
-| `fig5_rate_curve.png` | 各方法 PSNR / SSIM 随采样率变化曲线（双子图）| 图5-1（5.2 节，表5-2 之后）|
-| `fig5_per_image.png` | 25% 采样率下 11 张测试图的逐图 PSNR 对比 | 图5-5（5.3 节）|
+| 文件 | 内容 |
+|---|---|
+| `fig5_rate_curve.png` | 各方法 PSNR / SSIM 随采样率变化曲线（双子图）|
+| `fig5_per_image.png` | 25% 采样率下 11 张测试图的逐图 PSNR 对比 |
 
-数据同样取自 `results/` 下已跑完的评估结果，与演示系统折线图、论文表格三处同源。
+数据取自 `results/` 下已跑完的评估结果，与演示系统折线图、结果表格三处同源。
 
 ## 6. 完成情况
 
@@ -257,10 +249,10 @@ ReconNet=False（外部固定 Φ 采样）、OursNet=True（采样为网络的�
 | 3 | 自研网络：三级级联 + 多尺度残差 + 注意力 | ✅ 完成 |
 | 4 | 训练调优（100 epoch + 10 epoch 精调）| ✅ 完成 |
 | 5 | 对比实验 + 消融实验 + 演示系统 | ✅ 完成 |
-| 6 | 论文实验章节整理 | ✅ 完成 |
+| 6 | 实验内容整理与图表输出 | ✅ 完成 |
 
 产物：`results/comparison_set11.md`（对比总表）、`results/ablation_set11.md`（消融）、
-`results/figures/`（论文插图）、`checkpoints/`（三档权重，未纳入版本管理）。
+`results/figures/`（折线图）、`checkpoints/`（三档权重，未纳入版本管理）。
 
 ## 7. 国内网络与缓存配置（重要，2026-10 实测）
 
